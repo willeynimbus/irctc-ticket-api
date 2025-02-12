@@ -15,6 +15,7 @@ const port = process.env.PORT || 3000;
 const { Pool } = pckg;
 const { json } = pkg;
 const { verify, sign } = packg;
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
@@ -56,18 +57,13 @@ const authenticateToken = (req, res, next) => {
 
 // Improved admin authentication with constant-time comparison
 const authenticateAdmin = (req, res, next) => {
-    try {
-        const apiKey = req.headers['x-api-key'];
-        if (!apiKey || !crypto.timingSafeEqual(
-            Buffer.from(apiKey),
-            Buffer.from(process.env.ADMIN_API_KEY)
-        )) {
-            return res.status(403).json({ error: 'Invalid API key' });
-        }
-        next();
-    } catch (err) {
+    const apiKey = req.headers['x-api-key'];
+    console.log('Received API Key:', apiKey);
+    console.log('Expected API Key:', process.env.ADMIN_API_KEY);
+    if (apiKey !== process.env.ADMIN_API_KEY) {
         return res.status(403).json({ error: 'Authentication failed' });
     }
+    next();
 };
 
 // Register a User with password hashing and input validation
